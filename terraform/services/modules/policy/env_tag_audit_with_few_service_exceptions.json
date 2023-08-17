@@ -1,0 +1,79 @@
+{
+    "mode": "All",
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "notEquals": "Microsoft.Compute/virtualMachines/extensions"
+          },
+          {
+            "field": "type",
+            "notEquals": "Microsoft.Storage/storageAccounts/blobServices"
+          },
+          {
+            "field": "type",
+            "notEquals": "Microsoft.Storage/storageAccounts/fileServices"
+          },
+          {
+            "field": "type",
+            "notEquals": "Microsoft.Storage/storageAccounts/fileServices/shares"
+          },
+          {
+            "field": "type",
+            "notEquals": "Microsoft.Storage/storageAccounts/queueServices"
+          },
+          {
+            "field": "type",
+            "notEquals": "Microsoft.Storage/storageAccounts/tableServices"
+          },
+          {
+            "field": "type",
+            "notEquals": "Microsoft.Storage/storageAccounts/tableServices/tables"
+          },
+          {
+            "allOf": [
+              {
+                "field": "tags['Environment']",
+                "exists": false
+              },
+              {
+                "field": "tags['Environment']",
+                "notIn": "[parameters('allowedEnvironment')]"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    },
+    "parameters": {
+      "allowedEnvironment": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed Environment value",
+          "description": "The list of allowed env for resources."
+        },
+        "defaultValue": [
+          "prd",
+          "uat",
+          "dev"
+        ]
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Audit'"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    }
+}
