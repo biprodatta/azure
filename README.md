@@ -1,1 +1,1 @@
-# azure_storage_account
+# azure related
