@@ -25,7 +25,7 @@ for windows:
 add TF_LOG="DEBUG" and TF_LOG_PATH="C:\tmp\terraform.log" in system or user environment variable
 
 
-### How to install terraform for MAC:
+## How to install terraform for MAC:
 ##### you should have brew installed in your mac
 then open terminal and run below commands :
 ```sh
