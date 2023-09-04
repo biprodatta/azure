@@ -24,3 +24,15 @@ source ~/.bashrc
 for windows:
 add TF_LOG="DEBUG" and TF_LOG_PATH="C:\tmp\terraform.log" in system or user environment variable
 
+
+### How to install terraform for MAC:
+##### you should have brew installed in your mac
+then open terminal and run below commands :
+```sh
+brew install kreuzwerker/taps/m1-terraform-provider-helper
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
+m1-terraform-provider-helper activate
+m1-terraform-provider-helper install hashicorp/template -v v2.2.0
+```
+
