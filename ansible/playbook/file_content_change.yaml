@@ -1,0 +1,24 @@
+---
+- name: file content change of server.properties file
+  hosts: allservers
+  remote_user: datta
+
+  tasks:
+  - name: change metric.reporters parameter in server.properties file
+    ansible.builtin.lineinfile:
+      path: /home/datta/server.properties
+      regexp: '^metric.reporters=io.confluent'
+      line: metric.reporters=io.confluent.telemetry.reporter.TelemetryReporter
+
+  - name: Insert "confluent metrics reporter" configuration block in server.properties file
+    ansible.builtin.blockinfile:
+      path: /home/datta/server.properties
+      insertafter: '#confluent metrics reporter'
+      # marker: "#reporter parameter"
+      # marker_begin: "Telemetry"
+      # marker_end: "end of Telemetry"
+      backup: yes
+      block: |
+        confluent.telemetry.enabled=true
+        confluent.telemetry.api.key=abc
+        confluent.telemetry.api.secret=SECRET_STRING
