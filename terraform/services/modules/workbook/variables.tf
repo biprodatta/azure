@@ -10,6 +10,11 @@ variable "display_name" {
 variable "workbook_data_json" {
   description = "json formatted workbook file"
 }
+
+variable "uai_principal_id" {
+  description = "user assigned principal id"
+  
+}
 /*
 variable "tags" {
   type = list(object({
