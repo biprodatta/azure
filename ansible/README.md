@@ -24,7 +24,7 @@ ansible --version
 # get all active hosts
 ansible all --list-hosts
 ansible all -m ping
-ansible-playbook file_content_change.yaml
+ansible-playbook file_content_change.yaml -i /etc/ansible/inventories/master.ini -e adhoc_host=abc\* -u username --tags "post_installation_run" --limit "!host"
 ```
 For all hosts it is mendatory to enable passowrdless login for ansible server
 for that you need to go to /home/datta/.ssh directory
