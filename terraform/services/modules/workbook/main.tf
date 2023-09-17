@@ -7,7 +7,7 @@ locals {
 
 
 
-data "azurerm_resource_group" "example" {
+data "azurerm_resource_group" "rg" {
   name = var.rg_name
 }
 
@@ -18,8 +18,8 @@ data "azurerm_storage_container" "example" {
 
 resource "azurerm_application_insights_workbook" "example" {
   name                = uuid()
-  resource_group_name = data.azurerm_resource_group.example.name
-  location            = data.azurerm_resource_group.example.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
   display_name        = var.display_name
   data_json           = var.workbook_data_json
   storage_container_id = data.azurerm_storage_container.example.resource_manager_id
