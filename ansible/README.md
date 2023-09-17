@@ -39,12 +39,20 @@ drwxr-xr-x 7 datta datta 4096 Sep  6 06:22 ../
 -rw-r--r-- 1 datta datta  405 Sep  6 06:38 id_rsa.pub
 -rw-r--r-- 1 datta datta  222 Sep  6 06:25 known_hosts
 ```
-just run 
-cat id_rsa.pub
-then copy the content of it and login into all host servers and go to same 
-/home/USER/.ssh folder
-run : vi authorized_keys 
-save file using [escape] then, wq!
+if you cant see id_rsa and id_rsa.pub, then you need to create rsa key using "ssh-keygen" command. then both of those file will be there in /home/$USER/.ssh/ directory.
+
+once both files are there in your ansible host server, 
+either use option 1 or option 2:
+1) just run 
+    cat id_rsa.pub
+    then copy the content of it and login into all host servers and go to same 
+    /home/USER/.ssh folder
+    run : vi authorized_keys 
+    save file using [escape] then, wq!
+2) run below command :
+   yum install sshpass -y
+   SSHPASS=Passpwrd_of_distination_server sshpass –e ssh-copy-id -i /Users/biprodatta/.ssh/id_rsa.pub ansibleuser@destination_server_ip
+
 then login again into ansible server and try below:
 ssh USER@host-ip
 if you are able to login then you have successfully configured passwordless login.
