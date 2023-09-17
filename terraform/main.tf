@@ -32,6 +32,9 @@ module "azure_terraform_workbook" {
       workbook_data_json = "workspace_workbook"
     }
   }
+  depends_on = [ 
+    module.datta_user_identity
+  ]
   rg_name = var.rg_name
   uai_principal_id = module.datta_user_identity.uai_id
   display_name        = format("%s-%s", each.value.display_name, var.name_suffix)
