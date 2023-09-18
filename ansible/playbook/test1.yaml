@@ -1,0 +1,143 @@
+---
+- hosts: allservers
+  become: yes
+  serial: 1
+  gather_facts: no
+
+  vars:
+    - current_confluent_version: 6.1
+    - upgrade_confluent_version: 7.3
+    - upgrade_confluent_version_sub: 4
+    - service_name: confluent-kafka
+    - urp_check_retries : 900
+    - urp_check_interval : 60
+    - team : EGStreaming
+    - kafka_location: /usr/share/java/kafka
+
+  pre_tasks:
+    - name: PRETASK | copy kafka facts to host_vars
+      fetch: src="/etc/ansible/facts.d/kafka.yaml" dest="/tmp/host_vars/{{ inventory_hostname }}"
+      tags:
+        - pre_tasks
+        - variables
+    - name: PRETASK | gather ec2 facts
+      ec2_metadata_facts:
+      tags:
+        - pre_tasks
+        - variables
+
+    - name: PRETASK | collect all facts
+      setup:
+        fact_path: /etc/ansible/facts.d
+      tags:
+        - pre_tasks
+        - variables
+
+    - name: PRETASK | include kafka vars
+      include_vars: "/tmp/host_vars/{{ inventory_hostname }}/{{ inventory_hostname }}/etc/ansible/facts.d/kafka.yaml"
+      tags:
+        - pre_tasks
+        - variables
+
+    - name: PRETASK | get service facts
+      service_facts:
+      tags:
+        - pre_tasks
+        - variables
+
+    - name: PRETASK | check current Kafka version
+      find:
+        paths: /usr/share/java/kafka
+        file_type: file
+        use_regex: yes
+        patterns: ["kafka_{{ upgrade_scala_version }}-{{ upgrade_confluent_version }}.*-ce.jar"]
+      register: kafka_version_jar
+      tags:
+        - pre_tasks
+    - name: PRETASK | fail if Kafka version change is not needed
+      fail:
+        msg: "Kafka is already at {{ upgrade_confluent_version }} !"
+      when: kafka_version_jar.matched == 1
+      tags:
+        - pre_tasks
+
+    - name: PRETASK | create client properties file
+      shell: 'printf "security.protocol=SSL\nssl.endpoint.identification.algorithm=\nssl.keystore.type=PEM\nssl.truststore.type=PEM\nssl.keystore.location=/opt/certs/kafka-broker/keystore.pem\nssl.truststore.location=/opt/certs/kafka-broker/truststore.pem\nssl.key.password={{ ssl_password }}\n" > /home/kafka/client.properties'
+      changed_when: false
+      tags:
+        - pre_tasks
+
+    - name: PRETASK | Install latest JDK11
+      apt:
+        name:
+        - openjdk-11-jdk
+        state: latest
+        update_cache: yes
+      tags:
+        - pre_tasks
+        - java
+    - name: PRETASK | create a backup dir
+      file:
+        path: "/tmp/upgrade/{{ service_name }}"
+        state: directory
+        mode: 0640
+      changed_when: false
+      tags:
+        - pre_tasks
+        - backup
+
+    - name: PRETASK | get current timestamp
+      set_fact:
+        timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+      changed_when: false
+      tags:
+        - pre_tasks
+        - backup
+        - variables
+    - name: PRETASK | backup kafka configurations
+      copy:
+        src: "/etc/kafka/{{ item }}"
+        dest: "/tmp/upgrade/{{ service_name }}/{{ item }}.{{ timestamp }}"
+        backup: true
+        remote_src: true
+      changed_when: false
+      with_items:
+        - server.properties
+        - kafka.env
+      tags:
+        - pre_tasks
+        - backup
+  tasks:
+    - name: UPGRADE | stop confluent-kafka
+      service:
+        name: confluent-kafka
+        state: stopped
+      tags:
+        - upgrade
+    - name: change metric.reporters parameter in server.properties file
+      ansible.builtin.lineinfile:
+        path: /home/datta/server.properties
+        regexp: '^metric.reporters=io.confluent'
+        line: metric.reporters=io.confluent.telemetry.reporter.TelemetryReporter
+
+    - name: Insert "confluent metrics reporter" configuration block in server.properties file
+      ansible.builtin.blockinfile:
+        path: /home/datta/server.properties
+        insertafter: '#confluent metrics reporter'
+        # marker: "#reporter parameter"
+        # marker_begin: "Telemetry"
+        # marker_end: "end of Telemetry"
+        backup: yes
+        block: |
+          confluent.telemetry.enabled=true
+          confluent.telemetry.api.key=abc
+          confluent.telemetry.api.secret=SECRET_STRING
+      notify:
+        - restart kafka
+
+  handlers:
+    - name: restart kafka
+      systemd: name="{{ service_name }}" daemon_reload=yes state=restarted
+
+    - name: restart datadog
+      systemd: name=datadog-agent daemon_reload=yes state=restarted
