@@ -13,6 +13,7 @@ run: sudo yum install ansible -y
 if it is not installing ansible then you need to add repositery for installing ansible. for that you need to add below repos using below commands, then again run : sudo yum install ansible -y
 
 sudo subscription-manager register
+
 sudo subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms
 
 ```bash
