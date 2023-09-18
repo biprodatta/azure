@@ -6,6 +6,22 @@ sudo apt install software-properties-common
 sudo add-apt-repository --yes --update ppa:ansible/ansible
 sudo apt install ansible -y
 ```
+
+## Installation of ansible in RHEL 8 
+
+run: sudo yum install ansible -y
+if it is not installing ansible then you need to add repositery for installing ansible. for that you need to add below repos using below commands, then again run : sudo yum install ansible -y
+
+sudo subscription-manager register
+sudo subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms
+
+```bash
+sudo apt update
+sudo apt install software-properties-common
+sudo add-apt-repository --yes --update ppa:ansible/ansible
+sudo apt install ansible -y
+```
+
 Default directory for ansible is:
 /etc/ansible
 
